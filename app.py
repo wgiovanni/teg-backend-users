@@ -60,6 +60,12 @@ class User(db.Model):
     email = db.Column('email', db.String())
     password = db.Column('password', db.String())
 
+    def __init__(self, firstName, lastName, email, password):
+        self.firstName = firstName
+        self.lastName = lastName
+        self.email = email
+        self.password = password
+
 class UserSchema(ma.Schema):
     class Meta:
         fields = ('id', 'firstName', 'lastName', 'email', 'password')
@@ -89,6 +95,55 @@ def all_books():
         result = users_schema.dumps(users)
         return jsonify(result.data)
     return jsonify(response_object)
+
+@app.route('/user', methods=['GET'])
+def findAll():
+    users = User.query.all()
+    result = users_schema.dumps(users)
+    return jsonify(result.data)
+
+@app.route('/user/<user_id>', methods=['GET'])
+def findById(user_id):
+    user = User.query.get(user_id)
+    return user_schema.jsonify(user)
+
+@app.route('/user/<user_id>', methods=['PUT'])
+def update(user_id):
+    user = User.query.get(user_id)
+    firstName = request.json['firstName']
+    lastName = request.json['lastName']
+    email = request.json['email']
+    password = request.json['password']
+
+    user.firstName = firstName
+    user.lastName = lastName
+    user.email = email
+    user.password = password
+
+    db.session.commit()
+    return user_schema.jsonify(user)
+
+@app.route('/user', methods=['POST'])
+def save():
+    firstName = request.json['firstName']
+    lastName = request.json['lastName']
+    email = request.json['email']
+    password = request.json['password']
+
+    user = User(firstName, lastName, email, password)
+
+    db.session.add(user)
+    db.session.commit()
+
+    return user_schema.jsonify(user)
+
+@app.route('/user/<user_id>', methods=['DELETE'])
+def delete(user_id):
+    user = User.query.get(user_id)
+    db.session.delete(user)
+    db.session.commit()
+
+    return user_schema.jsonify(user)
 
 @app.route('/books/<book_id>', methods=['GET', 'PUT', 'DELETE'])
 def single_book(book_id):
