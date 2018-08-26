@@ -51,10 +51,16 @@ class BD:
 		elif isinstance(columns, list):
 			columns = "("+", ".join(columns)+")"
 
-		if isinstance(values[0], (list, tuple)):
-			marks = "?" + (",?" * (len(values[0]) - 1))
-			cursor.execute(f"insert into {table} {columns} values ({marks})", values)
 
+		if isinstance(values[0], (list, tuple)):
+			marks = "(%s" + (",%s" * (len(values[0]) - 1)) + ")"
+			sql = f"insert into {table} {columns} values {marks}", values
+			cursor.execute(sql, values)
+		else:
+			marks = "(%s" + (",%s" * (len(values) - 1)) + ")"
+			sql = f"insert into {table} {columns} values {marks}"
+			cursor.execute(sql, values)	
+		
 		cursor.close()
 
 
