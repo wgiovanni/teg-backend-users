@@ -85,6 +85,14 @@ class BD:
 		cursor.execute(sql, values)
 		cursor.close()
 
+	def remove(self, sql: str, params: list):
+		print("Entro")
+		self.connect()
+		cursor = self.conn.cursor()
+		cursor.execute(sql, params)
+		cursor.close()
+
+
 	def commit(self):
 		self.conn.commit()
 
