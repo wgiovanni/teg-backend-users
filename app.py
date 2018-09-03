@@ -8,7 +8,7 @@ from flask_restful import Api
 #from Users import Users, User
 #from user_schema import UserSchema
 #from user import UserSchema
-from resources.Users import UserList, User
+from resources.Users import UserList, User, Login
 
 # instantiate the app
 app = Flask(__name__)
@@ -39,7 +39,7 @@ CORS(app)
 #users route
 api.add_resource(UserList, '/user')
 api.add_resource(User, '/user/<user_id>')
-
+api.add_resource(Login, '/auth')
 
 # sanity check route
 #@app.route('/ping', methods=['GET'])

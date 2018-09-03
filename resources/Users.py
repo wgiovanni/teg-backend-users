@@ -89,3 +89,24 @@ class User(BaseRes):
 			abort(404, message="Resource {} doesn't exists".format(user_id))
 
 		return json.dumps(result), 204, { 'Access-Control-Allow-Origin': '*' }
+
+class Login(BaseRes):
+	database = "PRUEBA"
+	table = "USER"
+
+	def post(self):
+		try:
+			user = self.parser.parse_args()
+			print(user)
+			result = self.queryOne("SELECT * FROM USER WHERE EMAIL = %s", [user['email']])
+			if result['password'] != user['password']:
+				abort(404, message="Acceso Prohibido {} doesn't exists".format(result['id']))
+		except DatabaseError as e:
+			self.rollback()
+			bort(500, message="{0}: {1}".format(e.__class__.__name__, e.__str__()))
+		except Exception as e:
+			abort(500, message="{0}: {1}".format(e.__class__.__name__, e.__str__()))
+		
+		return json.dumps(result), 201, { 'Access-Control-Allow-Origin': '*' }
+
+
