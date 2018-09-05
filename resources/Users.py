@@ -103,11 +103,13 @@ class Login(BaseRes):
 			result = self.queryOne("SELECT * FROM USER WHERE EMAIL = %s", [user['email']])
 			if not result:
 				abort(404, message="User {} doesn't exists".format(user['email']))
-			if self.verify_hash(result['password'], user['password']):
-				access_token = create_access_token(identity = user['email'])
-				refresh_token = create_refresh_token(identity = user['email'])
-			else:
+			#if self.verify_hash(result['password'], user['password']):
+			if result['password'] != user['password']:
+				#access_token = create_access_token(identity = user['email'])
+				#refresh_token = create_refresh_token(identity = user['email'])
 				abort(404, message="Acceso Prohibido {} doesn't exists".format(user['id']))
+			#else:
+				#abort(404, message="Acceso Prohibido {} doesn't exists".format(user['id']))
 		except DatabaseError as e:
 			self.rollback()
 			abort(500, message="{0}: {1}".format(e.__class__.__name__, e.__str__()))
