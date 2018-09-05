@@ -8,13 +8,17 @@ from flask_restful import Api
 #from Users import Users, User
 #from user_schema import UserSchema
 #from user import UserSchema
+from flask_jwt_extended import JWTManager
 from resources.Users import UserList, User, Login
 
 # instantiate the app
 app = Flask(__name__)
 #app.config.from_object(config)
+app.config['JWT_SECRET_KEY'] = 'jwt-secret-string'
+jwt = JWTManager(app)
 api = Api(app)
 #ma = Marshmallow(app)
+
 
 # configuration database POSTGRESQL
 #POSTGRES = {
