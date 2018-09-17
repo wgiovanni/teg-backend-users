@@ -40,9 +40,7 @@ Instalar las extensiones o librerías necesarias. En este caso:
 - `flask`.
 - `flask-restful`.
 - `flask-cors`.
-- `pyodbc`.
 - `simplejson`.
-- `ldap3`.
 
 Se instalan haciendo uso del `pip` del nuevo entorno, esto se hara mediante un 
 archivo o fichero en el que estaran todas las extensiones("requirements.txt"):
@@ -57,9 +55,7 @@ requirements.txt
 > `flask` \
 > `flask-restful` \
 > `flask-cors` \
-> `pyodbc` \
 > `simplejson` \
-> `ldap3`
 
 # Proceso de inicio del servidor 
 
