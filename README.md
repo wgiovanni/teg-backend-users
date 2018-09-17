@@ -20,7 +20,7 @@
 
     > `virtualenv env`
 
-##Activar el virtualenv de Python
+## Activar el virtualenv de Python
 
 > `$ .\env\Scripts\activate` \
 > `(env)$ `
@@ -73,7 +73,7 @@ requirements.txt
 
     > `(env) C:\Users\wilke\Desktop\flask-vue\backend-users>python app.py`
 
-  	> ## **NOTA**: el puerto se toma por defecto (el que usa el flask, en este caso es el 5000), si se quiere tener otro puerto, se le debe colocar en la clase principal (app.py), por ejemplo:
+> ## **NOTA**: el puerto se toma por defecto (el que usa el flask, en este caso es el 5000), si se quiere tener otro puerto, se le debe colocar en la clase principal (app.py), por ejemplo:
 
 >
     if __name__ == '__main__': 
