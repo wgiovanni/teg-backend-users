@@ -1,19 +1,35 @@
-import pymysql
+#import pymysql
+import psycopg2
 import configparser
 
 class BD:
 	conn = None
 
 	def connect(self):
+		"""Consulta las propiedades de conexión del archivo user.properties en la sección [DB]
+        y crea la conexión a la base de datos. Esto se realiza una sola vez por cada instancia de la clase."""
 		if self.conn is None:
 			config = configparser.ConfigParser()
 			if not config.read('user.properties'):
 				raise Exception ('Error leyendo el archivo user.properties')
 
-			#self.conn = pymysql.connect(config['BD']['connstring'])
-			self.conn = pymysql.connect(host='localhost', user='root', password='', db='prueba')
+			print(config["BD"])
+			#self.conn = psycopg2.connect(config["BD"]["connstring"])
+			#self.conn = pymysql.connect(host='localhost', user='root', password='', db='prueba')
+			self.conn = psycopg2.connect(host="localhost", database="prueba", user="postgres", password="123456")
 
 	def queryAll(self, sql: str, params: list=[], columns: list=None):
+		"""
+        Ejecuta una consulta a la base de datos y devuelve todos los registros.
+
+        :param sql: Comando SELECT a ejecutar.
+        :param params: Lista de parámetros para asociar al comando SELECT.
+        :param columns: Lista opcional de nombres de columnas para los registros consultados.\n
+            Si no se especifica este parámetro los registros se devuelven con los nombres de columnas retornados por
+            la consulta ejecutada.
+        :return: Retorna una lista de diccionarios con los datos de cada registro retornado por la consulta ejecutada.\n
+            Ej. [{"id": 1, "first_name": "Jose", ...}, ...]
+        """
 		self.connect()
 		cursor = self.conn.cursor()
 		cursor.execute(sql, params)
@@ -24,6 +40,17 @@ class BD:
 		return [dict(zip(columns, row)) for row in rows]
 
 	def queryOne(self, sql: str, params: list=[], columns: list=None):
+		"""
+        Ejecuta una consulta a la base de datos y devuelve el primer registro.
+
+        :param sql: Comando SELECT a ejecutar.
+        :param params: Lista de parámetros para asociar al comando SELECT.
+        :param columns: Lista opcional de nombres de columnas para los registros consultados.\n
+            Si no se especifica este parámetro los registros se devuelven con los nombres de columnas retornados por
+            la consulta ejecutada.
+        :return: Retorna un diccionario con los datos del primer registro retornado por la consulta ejecutada.\n
+            Ej. {"id": 1, "first_name": "Jose", ...}
+        """
 		self.connect()
 		cursor = self.conn.cursor()
 		cursor.execute(sql, params)
@@ -36,6 +63,20 @@ class BD:
 		return dict(zip(columns, row))
 
 	def insert(self, table: str, datos: dict=None, columns=None, values: list=None):
+		"""
+        Inserta uno o varios registros en una tabla.
+
+        :param table: Nombre de la tabla.
+        :param datos: Diccionario con las keys para los nombres de columnas y los valores para insertar.\n
+            Ej. {"id": 1, "first_name": "Jose", ...}\n
+            Este diccionario sobreescribe los valores de los parámetros columns y values.
+        :param columns: Columnas de la tabla donde se van a insertar los datos.\n
+            Puede ser un string separado por comas. ej. 'id, first_name, ...'\n
+            Puede ser una lista de string. ej. ['id', 'first_name', ...]\n
+        :param values: Lista de valores a insertar en la tabla.\n
+            Puede ser una lista de valores simples para un solo registro. ej. [1, 'Jose', ...]\n
+            Puede ser una lista de tuplas para insertar varios registros. ej. [(1, 'Jose', ...), (2, 'Jesus', ...), ...]
+        """
 		self.connect()
 		cursor = self.conn.cursor()
 
@@ -65,6 +106,15 @@ class BD:
 
 
 	def update(self, table: str, datos: dict, where: dict):
+		"""
+        Actualiza uno o varios registros en una tabla.
+
+        :param table: Nombre de la tabla.
+        :param datos: Diccionario con las keys para los nombres de columnas y los nuevos valores los registros.\n
+            Ej. {"id": 1, "first_name": "Jose", ...}.
+        :param where: Diccionario con los datos para la condición del update.\n
+            Ej. {"id": 1, ...}.
+        """
 		self.connect()
 		cursor = self.conn.cursor()
 
