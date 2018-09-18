@@ -17,7 +17,7 @@ api = Api(app)
 
 
 # enable CORS
-CORS(app, resources={r"/api/*": {"origins": "*"}})
+CORS(app)
 
 # users route
 api.add_resource(UserList, '/user')
