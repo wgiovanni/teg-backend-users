@@ -1,5 +1,6 @@
 from flask_restful import abort
 import simplejson as json
+from pymysql import DatabaseError
 from resources.BaseRes import BaseRes
 from passlib.hash import pbkdf2_sha256 as sha256
 from flask_jwt_extended import (create_access_token, create_refresh_token, jwt_required, jwt_refresh_token_required, get_jwt_identity, get_raw_jwt)
@@ -10,27 +11,28 @@ class UserList(BaseRes):
 
 	def get(self):
 		try:
-			#result = self.queryAll("SELECT * FROM USER")
-			result = self.queryAll("SELECT * FROM public.USER")
-		except (Exception, psycopg2.DatabaseError) as e:
+			result = self.queryAll("SELECT * FROM USER")
+			#result = self.queryAll("SELECT * FROM PUBLIC.USER")
+		except DatabaseError as e:
 			self.rollback()
 			abort(500, message="{0}:{1}".format(e.__class__.__name__, e.__str__()))
 		except Exception as e:
 			abort(500, message="{0}:{1}".format(e.__class__.__name__, e.__str__()))
-			
+
 		return json.dumps(result), 200, { 'Access-Control-Allow-Origin': '*' }
 
 	def post(self):
 		try:
 			user = self.parser.parse_args()
+			print(user)
 			del user['id']
 			self.insert('USER', user)
 			#result = self.queryOne("SELECT TOP 1 * FROM USER ORDER BY ID DESC")
-			result = self.queryOne("SELECT * FROM public.USER ORDER BY ID DESC LIMIT 1")
+			result = self.queryOne("SELECT * FROM USER ORDER BY ID DESC LIMIT 1")
 			self.commit()
-		except (Exception, psycopg2.DatabaseError) as e:
+		except DatabaseError as e:
 			self.rollback()
-			bort(500, message="{0}: {1}".format(e.__class__.__name__, e.__str__()))
+			abort(500, message="{0}: {1}".format(e.__class__.__name__, e.__str__()))
 		except Exception as e:
 			abort(500, message="{0}: {1}".format(e.__class__.__name__, e.__str__()))
 		
@@ -42,10 +44,10 @@ class User(BaseRes):
 
 	def get(self, user_id):
 		try:
-			result = self.queryOne("SELECT * FROM public.USER WHERE ID = %s", [user_id])
+			result = self.queryOne("SELECT * FROM USER WHERE ID = %s", [user_id])
 			if result is None:
 				abort(404, message="Resource {} doesn't exists".format(user_id))
-		except (Exception, psycopg2.DatabaseError) as e:
+		except DatabaseError as e:
 			self.rollback()
 			abort(500, message="{0}: {1}".format(e.__class__.__name__, e.__str__()))
 		except Exception as e:
@@ -57,11 +59,11 @@ class User(BaseRes):
 			user = self.parser.parse_args()
 			del user['id']
 			self.update('USER', user, {'ID': user_id})
-			result = self.queryOne("SELECT * FROM public.USER WHERE ID = %s", [user_id])
+			result = self.queryOne("SELECT * FROM USER WHERE ID = %s", [user_id])
 			if result is None:
 				abort(404, message="Resource {} doesn't exist".format(user_id))
 			self.commit()
-		except (Exception, psycopg2.DatabaseError) as e:
+		except DatabaseError as e:
 			self.rollback()
 			abort(500, message="{0}: {1}".format(e.__class__.__name__, e.__str__()))
 		except Exception as e:
@@ -73,7 +75,7 @@ class User(BaseRes):
 	def delete(self, user_id):
 		try:
 			print(user_id)
-			result = self.queryOne("SELECT * FROM public.USER WHERE ID = %s", [user_id])
+			result = self.queryOne("SELECT * FROM USER WHERE ID = %s", [user_id])
 			print(result)
 			if result is None:
 				print("Entro")
@@ -81,13 +83,10 @@ class User(BaseRes):
 			else:
 				self.remove("DELETE FROM USER WHERE ID = %s", [user_id])
 				self.commit()
-		except (Exception, psycopg2.DatabaseError) as e:
+		except DatabaseError as e:
 			self.rollback()
-			#print("Entro 1")
 			abort(500, message="{0}: {1}".format(e.__class__.__name__, e.__str__()))
 		except Exception as e:
-			#print("Entro 2")
-			#abort(500, message="{0}: {1}".format(e.__class__.__name__, e.__str__()))
 			abort(404, message="Resource {} doesn't exists".format(user_id))
 
 		return json.dumps(result), 204, { 'Access-Control-Allow-Origin': '*' }
@@ -111,7 +110,7 @@ class Login(BaseRes):
 				abort(404, message="Acceso Prohibido {} doesn't exists".format(user['id']))
 			#else:
 				#abort(404, message="Acceso Prohibido {} doesn't exists".format(user['id']))
-		except (Exception, psycopg2.DatabaseError) as e:
+		except DatabaseError as e:
 			self.rollback()
 			abort(500, message="{0}: {1}".format(e.__class__.__name__, e.__str__()))
 		except Exception as e:

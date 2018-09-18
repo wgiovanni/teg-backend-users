@@ -1,5 +1,5 @@
-#import pymysql
-import psycopg2
+import pymysql
+#import psycopg2
 import configparser
 
 class BD:
@@ -13,10 +13,10 @@ class BD:
 			if not config.read('user.properties'):
 				raise Exception ('Error leyendo el archivo user.properties')
 
-			print(config["BD"])
+			#print(config["BD"])
 			#self.conn = psycopg2.connect(config["BD"]["connstring"])
-			#self.conn = pymysql.connect(host='localhost', user='root', password='', db='prueba')
-			self.conn = psycopg2.connect(host="localhost", database="prueba", user="postgres", password="123456")
+			self.conn = pymysql.connect(host='localhost', user='root', password='', db='prueba')
+			#self.conn = psycopg2.connect(host="localhost", database="prueba", user="postgres", password="123456")
 
 	def queryAll(self, sql: str, params: list=[], columns: list=None):
 		"""
@@ -34,6 +34,7 @@ class BD:
 		cursor = self.conn.cursor()
 		cursor.execute(sql, params)
 		rows = cursor.fetchall()
+	
 		if columns is None:
 			columns = [column[0].lower() for column in cursor.description]
 		cursor.close()
@@ -145,6 +146,6 @@ class BD:
 
 	def commit(self):
 		self.conn.commit()
-
+		
 	def rollback():
 		self.conn.rollback()

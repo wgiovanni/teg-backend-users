@@ -1,0 +1,88 @@
+from flask_restful import abort
+import simplejson as json
+from pymysql import DatabaseError
+from resources.BaseRes import BaseRes
+
+class RoleList(BaseRes):
+	database = "PRUEBA"
+	table = "ROLE"
+
+	def get(self):
+		try:
+			result = self.queryAll("SELECT * FROM ROLE")
+		except DatabaseError as e:
+			self.rollback()
+			abort(500, message="{0}:{1}".format(e.__class__.__name__, e.__str__()))
+		except Exception as e:
+			abort(500, message="{0}:{1}".format(e.__class__.__name__, e.__str__()))
+		
+		return json.dumps(result), 200, { 'Access-Control-Allow-Origin': '*' }
+
+	def post(self):
+		try:
+			role = self.parser.parse_args()
+			del role['id']
+			self.insert('ROLE', role)
+			#result = self.queryOne("SELECT TOP 1 * FROM ROLE ORDER BY ID DESC")
+			result = self.queryOne("SELECT * FROM ROLE ORDER BY ID DESC LIMIT 1")
+			self.commit()
+		except DatabaseError as e:
+			self.rollback()
+			abort(500, message="{0}: {1}".format(e.__class__.__name__, e.__str__()))
+		except Exception as e:
+			abort(500, message="{0}: {1}".format(e.__class__.__name__, e.__str__()))
+		
+		return json.dumps(result), 201, { 'Access-Control-Allow-Origin': '*' }
+
+class Role(BaseRes):
+	database = "PRUEBA"
+	table = "ROLE"
+
+	def get(self, role_id):
+		try:
+			result = self.queryOne("SELECT * FROM ROLE WHERE ID = %s", [role_id])
+			if result is None:
+				abort(404, message="Resource {} doesn't exists".format(role_id))
+		except DatabaseError as e:
+			self.rollback()
+			abort(500, message="{0}: {1}".format(e.__class__.__name__, e.__str__()))
+		except Exception as e:
+			abort(500, message="{0}: {1}".format(e.__class__.__name__, e.__str__()))
+		return json.dumps(result), 200, { 'Access-Control-Allow-Origin': '*' }
+
+	def put(self, role_id):
+		try:
+			role = self.parser.parse_args()
+			del role['id']
+			self.update('ROLE', role, {'ID': role_id})
+			result = self.queryOne("SELECT * FROM ROLE WHERE ID = %s", [role_id])
+			if result is None:
+				abort(404, message="Resource {} doesn't exist".format(role_id))
+			self.commit()
+		except DatabaseError as e:
+			self.rollback()
+			abort(500, message="{0}: {1}".format(e.__class__.__name__, e.__str__()))
+		except Exception as e:
+			abort(500, message="{0}: {1}".format(e.__class__.__name__, e.__str__()))
+
+		return json.dumps(result), 201, { 'Access-Control-Allow-Origin': '*' }
+
+
+	def delete(self, role_id):
+		try:
+			print(role_id)
+			result = self.queryOne("SELECT * FROM ROLE WHERE ID = %s", [role_id])
+			print(result)
+			if result is None:
+				print("Entro")
+				abort(404, message="Resource {} doesn't exists".format(role_id))
+			else:
+				self.remove("DELETE FROM ROLE WHERE ID = %s", [role_id])
+				self.commit()
+		except DatabaseError as e:
+			self.rollback()
+			abort(500, message="{0}: {1}".format(e.__class__.__name__, e.__str__()))
+		except Exception as e:
+			abort(404, message="Resource {} doesn't exists".format(role_id))
+
+		return json.dumps(result), 204, { 'Access-Control-Allow-Origin': '*' }
