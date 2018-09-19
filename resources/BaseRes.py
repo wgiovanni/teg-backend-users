@@ -16,7 +16,6 @@ class BaseRes(BD, Resource):
 			WHERE TABLE_SCHEMA = %s AND TABLE_NAME = %s"""), [self.database, self.table])
 		#cols = self.queryAll("SELECT COLUMN_NAME, DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = %s;", [self.table])
 
-
 		for col in cols:
 			params = {}
 			if col['data_type'] == 'int' or col['data_type'] == 'integer':

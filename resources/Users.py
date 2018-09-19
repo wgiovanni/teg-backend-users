@@ -1,6 +1,7 @@
 from flask_restful import abort
 import simplejson as json
 from pymysql import DatabaseError
+from textwrap import dedent
 from resources.BaseRes import BaseRes
 from passlib.hash import pbkdf2_sha256 as sha256
 from flask_jwt_extended import (create_access_token, create_refresh_token, jwt_required, jwt_refresh_token_required, get_jwt_identity, get_raw_jwt)
@@ -11,7 +12,10 @@ class UserList(BaseRes):
 
 	def get(self):
 		try:
-			result = self.queryAll("SELECT * FROM USER")
+			result = self.queryAll(dedent("""\
+			SELECT U.id, U.first_name, U.last_name, U.username, U.email, U.password, U.id_role, R.name 
+			FROM user AS U INNER JOIN role AS R 
+			ON U.id_role = R.id"""))
 			#result = self.queryAll("SELECT * FROM PUBLIC.USER")
 		except DatabaseError as e:
 			self.rollback()
@@ -26,6 +30,7 @@ class UserList(BaseRes):
 			user = self.parser.parse_args()
 			print(user)
 			del user['id']
+			del user['name']
 			self.insert('USER', user)
 			#result = self.queryOne("SELECT TOP 1 * FROM USER ORDER BY ID DESC")
 			result = self.queryOne("SELECT * FROM USER ORDER BY ID DESC LIMIT 1")
