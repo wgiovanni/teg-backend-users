@@ -40,4 +40,4 @@ api.add_resource(Role, '/role/<role_id>')
 #    return is_jti_blacklisted(jti)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, port=int('8084'))

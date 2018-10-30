@@ -115,7 +115,7 @@ class UserLogin(BaseRes):
 		try:
 			user = self.parser.parse_args()
 			print(user)
-			result = self.queryOne("SELECT * FROM USER WHERE USERNAME = %s", [user['username']])
+			result = self.queryOne("SELECT * FROM USER AS u INNER JOIN ROLE AS r ON (u.id_role = r.id) WHERE USERNAME = %s", [user['username']])
 			print(result)
 			if result is None:
 				return json.dumps({ 'message': 'Invalid credentials', 'authenticated': False }), 404
