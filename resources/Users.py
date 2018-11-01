@@ -6,13 +6,12 @@ from resources.BaseRes import BaseRes
 from passlib.hash import pbkdf2_sha256 as sha256
 from flask_jwt_extended import (create_access_token, create_refresh_token, jwt_required, jwt_refresh_token_required, get_jwt_identity, get_raw_jwt)
 
+
+	
+
 class UserList(BaseRes):
 	database = "PRUEBA"
 	table = "USER"
-
-	@staticmethod
-	def generate_hash(password):
-		return sha256.hash(password)
 
 	def get(self):
 		try:
@@ -35,7 +34,7 @@ class UserList(BaseRes):
 			print(user)
 			del user['id']
 			del user['name']
-			user['password'] = self.generate_hash(user['password'])
+			#user['password'] = self.generate_hash(user['password'])
 			self.insert('USER', user)
 			#result = self.queryOne("SELECT TOP 1 * FROM USER ORDER BY ID DESC")
 			result = self.queryOne("SELECT * FROM USER ORDER BY ID DESC LIMIT 1")
@@ -48,6 +47,25 @@ class UserList(BaseRes):
 		
 		return json.dumps(result), 201, { 'Access-Control-Allow-Origin': '*' }
 
+class Username(BaseRes):
+	database = "PRUEBA"
+	table = "USER"
+
+	def get(self, username):
+		try:
+			result = self.queryOne(dedent("""\
+			SELECT U.id, U.first_name, U.last_name, U.username, U.email, U.password, U.id_role, R.name 
+			FROM user AS U INNER JOIN role AS R 
+			ON U.id_role = R.id
+			WHERE U.username = %s"""), [username])
+			if result is None:
+				abort(404, message="Resource {} doesn't exists".format(username))
+		except DatabaseError as e:
+			self.rollback()
+			abort(500, message="{0}: {1}".format(e.__class__.__name__, e.__str__()))
+		except Exception as e:
+			abort(500, message="{0}: {1}".format(e.__class__.__name__, e.__str__()))
+		return json.dumps(result), 200, { 'Access-Control-Allow-Origin': '*' }
 	
 
 class User(BaseRes):
@@ -111,6 +129,10 @@ class UserLogin(BaseRes):
 	database = "PRUEBA"
 	table = "USER"
 
+	@staticmethod
+	def generate_hash(password):
+		return sha256.hash(password)
+
 	def post(self):
 		try:
 			user = self.parser.parse_args()
@@ -120,7 +142,7 @@ class UserLogin(BaseRes):
 			if result is None:
 				return json.dumps({ 'message': 'Invalid credentials', 'authenticated': False }), 404
 			#if self.verify_hash(result['password'], user['password']):
-			if self.verify_hash(user['password'], result['password']):
+			if self.verify_hash(user['password'], self.generate_hash(result['password'])):
 				access_token = create_access_token(identity = user['username'])
 				refresh_token = create_refresh_token(identity = user['username'])
 				return json.dumps({'user': result, 

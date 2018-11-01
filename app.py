@@ -5,7 +5,7 @@ from flask_restful import Api
 from flask_jwt_extended import JWTManager
 
 # Resources
-from resources.Users import UserList, User, UserLogin, SecretResource, UserLogoutAccess, UserLogoutRefresh, TokenRefresh
+from resources.Users import UserList, User, UserLogin, Username, SecretResource, UserLogoutAccess, UserLogoutRefresh, TokenRefresh
 from resources.Roles import RoleList, Role
 
 # instantiate the app
@@ -15,7 +15,7 @@ app.config['JWT_SECRET_KEY'] = 'jwt-secret-string'
 app.config['JWT_BLACKLIST_ENABLED'] = True
 app.config['JWT_BLACKLIST_TOKEN_CHECKS'] = ['access', 'refresh']
 jwt = JWTManager(app)
-api = Api(app)
+api = Api(app, prefix="/api/v1")
 
 
 # enable CORS
@@ -24,6 +24,7 @@ CORS(app)
 # users route
 api.add_resource(UserList, '/user')
 api.add_resource(User, '/user/<user_id>')
+api.add_resource(Username, '/username/<username>')
 api.add_resource(UserLogin, '/login')
 api.add_resource(UserLogoutAccess, '/logout/access')
 api.add_resource(UserLogoutRefresh, '/logout/refresh')
