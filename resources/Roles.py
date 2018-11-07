@@ -1,6 +1,7 @@
 from flask_restful import abort
 import simplejson as json
 from pymysql import DatabaseError
+from textwrap import dedent
 from resources.BaseRes import BaseRes
 
 class RoleList(BaseRes):
@@ -86,3 +87,43 @@ class Role(BaseRes):
 			abort(404, message="Resource {} doesn't exists".format(role_id))
 
 		return json.dumps(result), 204, { 'Access-Control-Allow-Origin': '*' }
+
+class UserRoleVerifity(BaseRes):
+	database = "PRUEBA"
+	table = "USER_ROLE"
+
+	def get(self, user_id):
+		try:
+			result = self.queryOne(dedent("""\
+			SELECT r.id, r.name 
+			FROM `user_role` AS ur 
+			INNER JOIN role AS r 
+			ON(ur.id_role = r.id) 
+			WHERE id_user = %s 
+			ORDER BY r.id DESC 
+			LIMIT 1"""), [user_id])
+			print(result)
+
+		except Exception as e:
+			abort(404, message="Resource {} doesn't exists".format(user_id))
+		return json.dumps(result), 200, { 'Access-Control-Allow-Origin': '*' }
+
+class UserRoleVicerector(BaseRes):
+	database = "PRUEBA"
+	table = "USER_ROLE"
+
+	def get(self, user_id):
+		try:
+			result = self.queryOne(dedent("""\
+			SELECT r.id, r.name 
+			FROM `user_role` AS ur 
+			INNER JOIN role AS r 
+			ON(ur.id_role = r.id) 
+			WHERE id_user = %s 
+			ORDER BY r.id ASC 
+			LIMIT 1"""), [user_id])
+			print(result)
+
+		except Exception as e:
+			abort(404, message="Resource {} doesn't exists".format(user_id))
+		return json.dumps(result), 200, { 'Access-Control-Allow-Origin': '*' }

@@ -6,7 +6,8 @@ from flask_jwt_extended import JWTManager
 
 # Resources
 from resources.Users import UserList, User, UserLogin, Username, SecretResource, UserLogoutAccess, UserLogoutRefresh, TokenRefresh
-from resources.Roles import RoleList, Role
+from resources.Roles import RoleList, Role, UserRoleVerifity, UserRoleVicerector
+from resources.HistoryAction import HistoryActionList, HistoryAction
 
 # instantiate the app
 app = Flask(__name__)
@@ -31,14 +32,17 @@ api.add_resource(UserLogoutRefresh, '/logout/refresh')
 api.add_resource(TokenRefresh, '/token/refresh')
 api.add_resource(SecretResource, '/secret')
 
+# user role route
+api.add_resource(UserRoleVerifity, '/userVerify/<user_id>')
+api.add_resource(UserRoleVicerector, '/userVicerector/<user_id>')
+
 # roles route
 api.add_resource(RoleList, '/role')
 api.add_resource(Role, '/role/<role_id>')
 
-#@jwt.token_in_blacklist_loader
-#def check_if_token_in_blacklist(decrypted_token):
-#    jti = decrypted_token['jti']
-#    return is_jti_blacklisted(jti)
+# history action route
+api.add_resource(HistoryActionList, '/historyaction')
+api.add_resource(HistoryAction, '/historyaction/<historyActionId>')
 
 if __name__ == '__main__':
     app.run(debug=True, port=int('8084'))
