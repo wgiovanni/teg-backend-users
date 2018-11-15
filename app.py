@@ -6,7 +6,7 @@ from flask_jwt_extended import JWTManager
 
 # Resources
 from resources.Users import UserList, User, UserLogin, Username, SecretResource, UserLogoutAccess, UserLogoutRefresh, TokenRefresh
-from resources.Roles import RoleList, Role, UserRoleVerifity, UserRoleVicerector
+from resources.Roles import RoleList, Role, UserRoleVerifity, UserRoleVicerector, RoleUser
 from resources.HistoryAction import HistoryActionList, HistoryAction
 
 # instantiate the app
@@ -39,6 +39,7 @@ api.add_resource(UserRoleVicerector, '/userVicerector/<user_id>')
 # roles route
 api.add_resource(RoleList, '/role')
 api.add_resource(Role, '/role/<role_id>')
+api.add_resource(RoleUser, '/roleuser/<name_role>')
 
 # history action route
 api.add_resource(HistoryActionList, '/historyaction')

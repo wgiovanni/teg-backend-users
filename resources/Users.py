@@ -15,7 +15,7 @@ class UserList(BD, Resource):
 	def get(self):
 		try:
 			result = self.queryAll(dedent("""\
-			SELECT U.id, U.first_name, U.last_name, U.username, U.email, U.password, UR.id_role, R.name 
+			SELECT U.id, U.first_name, U.last_name, U.username, U.email, U.phone, U.address, U.password, UR.id_role, R.name 
 			FROM user AS U INNER JOIN user_role AS UR 
 			ON (U.id = UR.id_user) 
 			INNER JOIN role AS R 
@@ -39,6 +39,8 @@ class UserList(BD, Resource):
 				"last_name": user['last_name'],
 				"username": user['username'],
 				"email": user['email'],
+				"phone": user['phone'],
+				"address": user['address'],
 				"password": user['password']
 			}
 			#user['password'] = self.generate_hash(user['password'])
@@ -101,7 +103,7 @@ class Username(BD, Resource):
 	def get(self, username):
 		try:
 			result = self.queryOne(dedent("""\
-			SELECT U.id, U.first_name, U.last_name, U.username, U.email, U.password, U.id_role, R.name 
+			SELECT U.id, U.first_name, U.last_name, U.username, U.email, U.phone, U.address, U.password, U.id_role, R.name 
 			FROM user AS U INNER JOIN role AS R 
 			ON U.id_role = R.id
 			WHERE U.username = %s"""), [username])
@@ -121,7 +123,7 @@ class User(BD, Resource):
 	def get(self, user_id):
 		try:
 			result = self.queryOne(dedent("""\
-			SELECT U.id, U.first_name, U.last_name, U.username, U.email, U.password, UR.id_role, R.name 
+			SELECT U.id, U.first_name, U.last_name, U.username, U.email, U.phone, U.address, U.password, UR.id_role, R.name 
 			FROM USER AS U 
 			INNER JOIN user_role AS UR
 			ON (U.id = UR.id_user) 
@@ -147,6 +149,8 @@ class User(BD, Resource):
 				"last_name": user['last_name'],
 				"username": user['username'],
 				"email": user['email'],
+				"phone": user['phone'],
+				"address": user['address'],
 				"password": user['password']
 			}
 			self.update('USER', userUpdate, {'ID': user_id})
@@ -265,7 +269,7 @@ class UserLogin(BD, Resource):
 				"module": "Usuarios"
 			}
 			result = self.queryOne(dedent("""\
-			SELECT U.id, U.first_name, U.last_name, U.username, U.email, U.password, UR.id_role, R.name 
+			SELECT U.id, U.first_name, U.last_name, U.username, U.email, U.phone, U.address, U.password, UR.id_role, R.name 
 			FROM USER AS U 
 			INNER JOIN user_role AS UR
 			ON (U.id = UR.id_user) 

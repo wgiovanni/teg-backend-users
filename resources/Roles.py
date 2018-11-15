@@ -127,3 +127,26 @@ class UserRoleVicerector(BaseRes):
 		except Exception as e:
 			abort(404, message="Resource {} doesn't exists".format(user_id))
 		return json.dumps(result), 200, { 'Access-Control-Allow-Origin': '*' }
+
+class RoleUser(BaseRes):
+	database = "PRUEBA"
+	table = "ROLE"
+
+	def get(self, name_role):
+		try:
+			result = self.queryAll(dedent("""\
+			SELECT u.first_name, u.email, u.phone, u.address 
+			FROM role as r 
+			INNER JOIN user_role as ur 
+			ON (r.id = ur.id_role) 
+			INNER JOIN user as u 
+			ON (ur.id_user = u.id) 
+			WHERE r.name = %s"""), [name_role])
+			
+		except DatabaseError as e:
+			self.rollback()
+			abort(500, message="{0}:{1}".format(e.__class__.__name__, e.__str__()))
+		except Exception as e:
+			abort(500, message="{0}:{1}".format(e.__class__.__name__, e.__str__()))
+
+		return json.dumps(result), 200, { 'Access-Control-Allow-Origin': '*' }
