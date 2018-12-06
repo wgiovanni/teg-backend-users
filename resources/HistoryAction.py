@@ -13,7 +13,7 @@ class HistoryActionList(BD, Resource):
 
     def get(self):
         try:
-            result = self.queryAll("""SELECT * FROM history_action""")
+            result = self.queryAll("""SELECT * FROM history_action WHERE status = 1""")
             for r in result:
                 r['date'] = r['date'].strftime('%Y-%m-%d %H:%M:%S')
         except DatabaseError as e:
@@ -39,9 +39,24 @@ class HistoryActionList(BD, Resource):
         except Exception as e:
             abort(500, message="{0}: {1}".format(e.__class__.__name__, e.__str__()))
 
-        return json.dumps(result), 201, { 'Access-Control-Allow-Origin': '*' }	
+        return json.dumps(result), 201, { 'Access-Control-Allow-Origin': '*' }
 
-class HistoryAction(Resource):
+    def delete(self):
+        try:
+            print("Entro")
+            #self.remove("DELETE FROM HISTORY_ACTION",[])
+            self.remove("UPDATE HISTORY_ACTION SET status = %s",[False])
+            self.commit()
+            print("Salio")
+        except DatabaseError as e:
+            self.rollback()
+            abort(500, message="{0}: {1}".format(e.__class__.__name__, e.__str__()))
+        except Exception as e:
+            abort(404, message="Resource {} doesn't exists")
+
+        return json.dumps({"message": "Eliminado todos los registros"}), 204, { 'Access-Control-Allow-Origin': '*' }	
+
+class HistoryAction(Resource, BD):
     representations = {'application/json': make_response}
 
     def get(self, historyActionId):
@@ -76,22 +91,6 @@ class HistoryAction(Resource):
 
         return json.dumps(result), 201, { 'Access-Control-Allow-Origin': '*' }
 
-
-    def delete(self, historyActionId):
-        try:
-            result = self.queryOne("SELECT * FROM HISTORY_ACTION WHERE ID = %s", [historyActionId])
-            if result is None:
-                abort(404, message="Resource {} doesn't exists".format(historyActionId))
-            else:
-                self.remove("DELETE FROM HISTORY_ACTION WHERE ID = %s", [historyActionId])
-                self.commit()
-        except DatabaseError as e:
-            self.rollback()
-            abort(500, message="{0}: {1}".format(e.__class__.__name__, e.__str__()))
-        except Exception as e:
-            abort(404, message="Resource {} doesn't exists".format(historyActionId))
-
-        return json.dumps(result), 204, { 'Access-Control-Allow-Origin': '*' }
 
 
 	

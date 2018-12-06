@@ -9,14 +9,7 @@ class BD:
 		"""Consulta las propiedades de conexión del archivo user.properties en la sección [DB]
         y crea la conexión a la base de datos. Esto se realiza una sola vez por cada instancia de la clase."""
 		if self.conn is None:
-			config = configparser.ConfigParser()
-			if not config.read('user.properties'):
-				raise Exception ('Error leyendo el archivo user.properties')
-
-			#print(config["BD"])
-			#self.conn = psycopg2.connect(config["BD"]["connstring"])
 			self.conn = pymysql.connect(host='localhost', user='root', password='', db='prueba')
-			#self.conn = psycopg2.connect(host="localhost", database="prueba", user="postgres", password="123456")
 
 	def queryAll(self, sql: str, params: list=[], columns: list=None):
 		"""
@@ -137,7 +130,6 @@ class BD:
 		cursor.close()
 
 	def remove(self, sql: str, params: list):
-		print("Entro")
 		self.connect()
 		cursor = self.conn.cursor()
 		cursor.execute(sql, params)

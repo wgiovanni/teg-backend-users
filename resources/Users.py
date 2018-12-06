@@ -19,7 +19,8 @@ class UserList(BD, Resource):
 			FROM user AS U INNER JOIN user_role AS UR 
 			ON (U.id = UR.id_user) 
 			INNER JOIN role AS R 
-			ON (UR.id_role = R.id) 
+			ON (UR.id_role = R.id)
+			WHERE U.removed = false 
 			GROUP BY U.id"""))
 			#result = self.queryAll("SELECT * FROM PUBLIC.USER")
 		except DatabaseError as e:
@@ -80,10 +81,18 @@ class UserList(BD, Resource):
 					self.insert('USER_ROLE', userRole)
 					self.commit()
 				# datos de auditoria
+				ip = ''
+				if request.environ.get('HTTP_X_FORWARDED_FOR') is None:
+					ip = request.environ['REMOTE_ADDR']
+				else:
+					ip = request.environ['HTTP_X_FORWARDED_FOR']
 				audit = {
 					"username": user['user'],
 					"action": 'Agregó un usuario',
-					"module": 'Usuarios'
+					"module": 'Usuarios',
+					"ip": ip,
+					"status": True
+
 				}
 				self.insert('HISTORY_ACTION', audit)
 				self.commit()
@@ -106,7 +115,7 @@ class Username(BD, Resource):
 			SELECT U.id, U.first_name, U.last_name, U.username, U.email, U.phone, U.address, U.password, U.id_role, R.name 
 			FROM user AS U INNER JOIN role AS R 
 			ON U.id_role = R.id
-			WHERE U.username = %s"""), [username])
+			WHERE U.username = %s AND U.removed = false"""), [username])
 			if result is None:
 				abort(404, message="Resource {} doesn't exists".format(username))
 		except DatabaseError as e:
@@ -129,7 +138,7 @@ class User(BD, Resource):
 			ON (U.id = UR.id_user) 
 			INNER JOIN role AS R 
 			ON (UR.id_role = R.id) 
-			WHERE U.id = %s"""), [user_id])
+			WHERE U.id = %s AND WHERE U.removed = false"""), [user_id])
 			if result is None:
 				abort(404, message="Resource {} doesn't exists".format(user_id))
 		except DatabaseError as e:
@@ -191,10 +200,17 @@ class User(BD, Resource):
 					self.commit()
 
 				# datos de auditoria
+				ip = ''
+				if request.environ.get('HTTP_X_FORWARDED_FOR') is None:
+					ip = request.environ['REMOTE_ADDR']
+				else:
+					ip = request.environ['HTTP_X_FORWARDED_FOR']
 				audit = {
 					"username": user['user'],
 					"action": 'Modificó un usuario',
-					"module": 'Usuarios'
+					"module": 'Usuarios',
+					"ip": ip,
+					"status": True
 				}
 				self.insert('HISTORY_ACTION', audit)
 				self.commit()
@@ -213,28 +229,35 @@ class User(BD, Resource):
 		try:
 			jsonData = request.get_data(cache=False, as_text=False, parse_form_data=False)
 			jsonData = json.loads(jsonData)
-			result = self.queryOne("SELECT * FROM USER WHERE ID = %s", [user_id])
+			result = self.queryOne("SELECT * FROM USER WHERE ID = %s AND REMOVED=false", [user_id])
 			#print(result)
 			if result is None:
 				abort(404, message="Resource {} doesn't exists".format(user_id))
 			else:
-				userRole = self.queryAll("SELECT * FROM USER_ROLE WHERE id_user = %s", [user_id])
-				if userRole is None:
-					abort(404, message="Resource {} doesn't exists".format(user_id))
-				else:
-					self.remove("DELETE FROM USER_ROLE WHERE id_user = %s", [user_id])
-					self.commit()
-				self.remove("DELETE FROM USER WHERE ID = %s", [user_id])
-				self.commit()
+				#userRole = self.queryAll("SELECT * FROM USER_ROLE WHERE id_user = %s", [user_id])
+				#if userRole is None:
+				#	abort(404, message="Resource {} doesn't exists".format(user_id))
+				#else:
+					#self.remove("DELETE FROM USER_ROLE WHERE id_user = %s", [user_id])
+					#self.commit()
+				self.remove("UPDATE USER SET REMOVED = %s WHERE ID = %s", [True, user_id])
 				# datos de auditoria
+				ip = ''
+				if request.environ.get('HTTP_X_FORWARDED_FOR') is None:
+					ip = request.environ['REMOTE_ADDR']
+				else:
+					ip = request.environ['HTTP_X_FORWARDED_FOR']
 				audit = {
 					"username": jsonData['user'],
 					"action": 'Eliminó un usuario',
-					"module": 'Usuarios'
+					"module": 'Usuarios',
+					"ip": ip,
+					"status": True
 				}
 				self.insert('HISTORY_ACTION', audit)
 				self.commit()
 		except DatabaseError as e:
+			print(e)
 			self.rollback()
 			abort(500, message="{0}: {1}".format(e.__class__.__name__, e.__str__()))
 		except Exception as e:
@@ -263,10 +286,17 @@ class UserLogin(BD, Resource):
 				"password": jsonData['password']
 			}
 			print(user)
+			ip = ''
+			if request.environ.get('HTTP_X_FORWARDED_FOR') is None:
+				ip = request.environ['REMOTE_ADDR']
+			else:
+				ip = request.environ['HTTP_X_FORWARDED_FOR']
 			audit = {
 				"username": jsonData['username'],
 				"action": "Ingreso al sistema",
-				"module": "Usuarios"
+				"module": "Usuarios",
+				"ip": ip,
+				"status": True
 			}
 			result = self.queryOne(dedent("""\
 			SELECT U.id, U.first_name, U.last_name, U.username, U.email, U.phone, U.address, U.password, UR.id_role, R.name 
@@ -275,8 +305,8 @@ class UserLogin(BD, Resource):
 			ON (U.id = UR.id_user) 
 			INNER JOIN role AS R 
 			ON (UR.id_role = R.id) 
-			WHERE U.username = %s"""), [user['username']])
-			print(result)
+			WHERE U.username = %s AND U.removed = false"""), [user['username']])
+			#print(result)
 			if result is None:
 				return json.dumps({ 'message': 'Invalid credentials', 'authenticated': False }), 404
 			#if self.verify_hash(result['password'], user['password']):
