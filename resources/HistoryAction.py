@@ -13,7 +13,7 @@ class HistoryActionList(BD, Resource):
 
     def get(self):
         try:
-            result = self.queryAll("""SELECT * FROM history_action WHERE status = 1""")
+            result = self.queryAll("""SELECT * FROM history_action WHERE status = 1 ORDER BY date DESC""")
             for r in result:
                 r['date'] = r['date'].strftime('%Y-%m-%d %H:%M:%S')
         except DatabaseError as e:

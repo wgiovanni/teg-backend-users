@@ -138,7 +138,7 @@ class User(BD, Resource):
 			ON (U.id = UR.id_user) 
 			INNER JOIN role AS R 
 			ON (UR.id_role = R.id) 
-			WHERE U.id = %s AND WHERE U.removed = false"""), [user_id])
+			WHERE U.id = %s AND U.removed = false"""), [user_id])
 			if result is None:
 				abort(404, message="Resource {} doesn't exists".format(user_id))
 		except DatabaseError as e:
