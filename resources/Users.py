@@ -94,7 +94,7 @@ class UserList(BD, Resource):
 					"status": True
 
 				}
-				self.insert('HISTORY_ACTION', audit)
+				self.insert('history_action', audit)
 				self.commit()
 			else:
 				print("NO hay rol de vicerrector")	
@@ -212,7 +212,7 @@ class User(BD, Resource):
 					"ip": ip,
 					"status": True
 				}
-				self.insert('HISTORY_ACTION', audit)
+				self.insert('history_action', audit)
 				self.commit()
 			else:
 				print("NO hay rol de vicerrector")		
@@ -254,7 +254,7 @@ class User(BD, Resource):
 					"ip": ip,
 					"status": True
 				}
-				self.insert('HISTORY_ACTION', audit)
+				self.insert('history_action', audit)
 				self.commit()
 		except DatabaseError as e:
 			print(e)
@@ -311,7 +311,7 @@ class UserLogin(BD, Resource):
 				return json.dumps({ 'message': 'Invalid credentials', 'authenticated': False }), 404
 			#if self.verify_hash(result['password'], user['password']):
 			if self.verify_hash(user['password'], self.generate_hash(result['password'])):
-				self.insert('HISTORY_ACTION', audit)
+				self.insert('history_action', audit)
 				self.commit()
 				access_token = create_access_token(identity = user['username'])
 				refresh_token = create_refresh_token(identity = user['username'])
