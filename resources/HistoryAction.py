@@ -28,9 +28,9 @@ class HistoryActionList(BD, Resource):
         try:
             result = request.get_json(force=True)
             print(result)
-            self.insert('HISTORY_ACTION', result)
+            self.insert('history_action', result)
             #result = self.queryOne("SELECT TOP 1 * FROM USER ORDER BY ID DESC")
-            result = self.queryOne("SELECT * FROM HISTORY_ACTION ORDER BY ID DESC LIMIT 1")
+            result = self.queryOne("SELECT * FROM history_action ORDER BY id DESC LIMIT 1")
             result['date'] = result['date'].strftime('%Y-%m-%d %H:%M:%S')
             self.commit()
         except DatabaseError as e:
@@ -45,7 +45,7 @@ class HistoryActionList(BD, Resource):
         try:
             print("Entro")
             #self.remove("DELETE FROM HISTORY_ACTION",[])
-            self.remove("UPDATE HISTORY_ACTION SET status = %s",[False])
+            self.remove("UPDATE history_action SET status = %s",[False])
             self.commit()
             print("Salio")
         except DatabaseError as e:
@@ -62,7 +62,7 @@ class HistoryAction(Resource, BD):
     def get(self, historyActionId):
         try:
             result = self.queryOne(dedent("""\
-            SELECT * FROM HISTORY_ACTION
+            SELECT * FROM history_action
             WHERE id = %s"""), [historyActionId])
             if result is None:
                 abort(404, message="Resource {} doesn't exists".format(historyActionId))
@@ -78,10 +78,10 @@ class HistoryAction(Resource, BD):
             result = self.parser.parse_args()
             print(result)
             del result['id']
-            self.update('HISTORY_ACTION', result, {'ID': historyActionId})
-            result = self.queryOne("SELECT * FROM HISTORY_ACTION WHERE ID = %s", [historyActionId])
+            self.update('history_action', result, {'ID': historyActionId})
+            result = self.queryOne("SELECT * FROM history_action WHERE id = %s", [historyActionId])
             if result is None:
-                abort(404, message="Resource {} doesn't exist".format(user_id))
+                abort(404, message="Resource {} doesn't exist".format(historyActionId))
             self.commit()
         except DatabaseError as e:
             self.rollback()

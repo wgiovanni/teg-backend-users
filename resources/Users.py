@@ -22,7 +22,7 @@ class UserList(BD, Resource):
 			ON (UR.id_role = R.id)
 			WHERE U.removed = false 
 			GROUP BY U.id"""))
-			#result = self.queryAll("SELECT * FROM PUBLIC.USER")
+			#result = self.queryAll("SELECT * FROM PUBLIC.user")
 		except DatabaseError as e:
 			self.rollback()
 			abort(500, message="{0}:{1}".format(e.__class__.__name__, e.__str__()))
@@ -45,13 +45,13 @@ class UserList(BD, Resource):
 				"password": user['password']
 			}
 			#user['password'] = self.generate_hash(user['password'])
-			self.insert('USER', userPost)
-			#result = self.queryOne("SELECT TOP 1 * FROM USER ORDER BY ID DESC")
-			result = self.queryOne("SELECT * FROM USER ORDER BY ID DESC LIMIT 1")
+			self.insert('user', userPost)
+			#result = self.queryOne("SELECT TOP 1 * FROM user ORDER BY ID DESC")
+			result = self.queryOne("SELECT * FROM user ORDER BY ID DESC LIMIT 1")
 			self.commit()
 			print(result)
 			roleName = "vicerrector"
-			roleVicerector = self.queryOne("SELECT * FROM ROLE WHERE name = %s", [roleName])
+			roleVicerector = self.queryOne("SELECT * FROM role WHERE name = %s", [roleName])
 			print(roleVicerector)
 			#user['id'] es el ID del role
 			idRole = user['id_role']
@@ -59,18 +59,18 @@ class UserList(BD, Resource):
 				if roleVicerector['id'] == idRole:
 					print("entro1")
 					roleName = "verificador"
-					roleVerify = self.queryOne("SELECT * FROM ROLE WHERE name = %s", [roleName])
+					roleVerify = self.queryOne("SELECT * FROM role WHERE name = %s", [roleName])
 					userRole = {
 						"id_user": result['id'],
 						"id_role": idRole 
 					}
-					self.insert('USER_ROLE', userRole)
+					self.insert('user_role', userRole)
 					self.commit()
 					userRole = {
 						"id_user": result['id'],
 						"id_role": roleVerify['id'] 
 					}
-					self.insert('USER_ROLE', userRole)
+					self.insert('user_role', userRole)
 					self.commit()
 				else:
 					print("entro2")
@@ -78,7 +78,7 @@ class UserList(BD, Resource):
 						"id_user": result['id'],
 						"id_role": idRole
 					}
-					self.insert('USER_ROLE', userRole)
+					self.insert('user_role', userRole)
 					self.commit()
 				# datos de auditoria
 				ip = ''
@@ -133,7 +133,7 @@ class User(BD, Resource):
 		try:
 			result = self.queryOne(dedent("""\
 			SELECT U.id, U.first_name, U.last_name, U.username, U.email, U.phone, U.address, U.password, UR.id_role, R.name 
-			FROM USER AS U 
+			FROM user AS U 
 			INNER JOIN user_role AS UR
 			ON (U.id = UR.id_user) 
 			INNER JOIN role AS R 
@@ -162,41 +162,41 @@ class User(BD, Resource):
 				"address": user['address'],
 				"password": user['password']
 			}
-			self.update('USER', userUpdate, {'ID': user_id})
-			result = self.queryOne("SELECT * FROM USER WHERE ID = %s", [user_id])
+			self.update('user', userUpdate, {'ID': user_id})
+			result = self.queryOne("SELECT * FROM user WHERE ID = %s", [user_id])
 			if result is None:
 				abort(404, message="Resource {} doesn't exist".format(user_id))
 			self.commit()
 			roleName = "vicerrector"
-			roleVicerector = self.queryOne("SELECT * FROM ROLE WHERE name = %s", [roleName])
+			roleVicerector = self.queryOne("SELECT * FROM role WHERE name = %s", [roleName])
 			print(roleVicerector)
 			idRole = user['id_role']
 			if roleVicerector is not None:
 				if roleVicerector['id'] == idRole:
 					roleName = "verificador"
-					roleVerify = self.queryOne("SELECT * FROM ROLE WHERE name = %s", [roleName])
-					self.remove("DELETE FROM USER_ROLE WHERE id_user = %s", [user_id])
+					roleVerify = self.queryOne("SELECT * FROM role WHERE name = %s", [roleName])
+					self.remove("DELETE FROM user_role WHERE id_user = %s", [user_id])
 					self.commit()
 					userRole = {
 						"id_user": result['id'],
 						"id_role": idRole 
 					}
-					self.insert('USER_ROLE', userRole)
+					self.insert('user_role', userRole)
 					self.commit()
 					userRole = {
 						"id_user": result['id'],
 						"id_role": roleVerify['id'] 
 					}
-					self.insert('USER_ROLE', userRole)
+					self.insert('user_role', userRole)
 					self.commit()
 				else:
-					self.remove("DELETE FROM USER_ROLE WHERE id_user = %s", [user_id])
+					self.remove("DELETE FROM user_role WHERE id_user = %s", [user_id])
 					self.commit()
 					userRole = {
 						"id_user": result['id'],
 						"id_role": idRole
 					}
-					self.insert('USER_ROLE', userRole)
+					self.insert('user_role', userRole)
 					self.commit()
 
 				# datos de auditoria
@@ -229,18 +229,18 @@ class User(BD, Resource):
 		try:
 			jsonData = request.get_data(cache=False, as_text=False, parse_form_data=False)
 			jsonData = json.loads(jsonData)
-			result = self.queryOne("SELECT * FROM USER WHERE ID = %s AND REMOVED=false", [user_id])
+			result = self.queryOne("SELECT * FROM user WHERE ID = %s AND REMOVED=false", [user_id])
 			#print(result)
 			if result is None:
 				abort(404, message="Resource {} doesn't exists".format(user_id))
 			else:
-				#userRole = self.queryAll("SELECT * FROM USER_ROLE WHERE id_user = %s", [user_id])
+				#userRole = self.queryAll("SELECT * FROM user_ROLE WHERE id_user = %s", [user_id])
 				#if userRole is None:
 				#	abort(404, message="Resource {} doesn't exists".format(user_id))
 				#else:
-					#self.remove("DELETE FROM USER_ROLE WHERE id_user = %s", [user_id])
+					#self.remove("DELETE FROM user_ROLE WHERE id_user = %s", [user_id])
 					#self.commit()
-				self.remove("UPDATE USER SET REMOVED = %s WHERE ID = %s", [True, user_id])
+				self.remove("UPDATE user SET removed = %s WHERE id = %s", [True, user_id])
 				# datos de auditoria
 				ip = ''
 				if request.environ.get('HTTP_X_FORWARDED_FOR') is None:
@@ -300,7 +300,7 @@ class UserLogin(BD, Resource):
 			}
 			result = self.queryOne(dedent("""\
 			SELECT U.id, U.first_name, U.last_name, U.username, U.email, U.phone, U.address, U.password, UR.id_role, R.name 
-			FROM USER AS U 
+			FROM user AS U 
 			INNER JOIN user_role AS UR
 			ON (U.id = UR.id_user) 
 			INNER JOIN role AS R 
