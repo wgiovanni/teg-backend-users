@@ -9,7 +9,7 @@ class BD:
 		"""Consulta las propiedades de conexión del archivo user.properties en la sección [DB]
         y crea la conexión a la base de datos. Esto se realiza una sola vez por cada instancia de la clase."""
 		if self.conn is None:
-			self.conn = pymysql.connect(host='localhost', user='root', password='', db='prueba')
+			self.conn = pymysql.connect(host='localhost', user='root', password='', db='rankinguc')
 
 	def queryAll(self, sql: str, params: list=[], columns: list=None):
 		"""
